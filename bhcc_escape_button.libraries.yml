@@ -1,0 +1,7 @@
+rewrite_history:
+  version: 1.x
+  js:
+    js/escape_write_history_items.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery

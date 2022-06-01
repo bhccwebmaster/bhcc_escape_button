@@ -1,0 +1,5 @@
+name: 'BHCC Escape Button'
+type: module
+description: 'Escape button block and rewrite history functionality'
+core_version_requirement: ^8 || ^9
+package: 'BHCC'
