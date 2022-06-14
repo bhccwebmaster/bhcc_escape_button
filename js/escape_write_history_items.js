@@ -16,7 +16,7 @@
       }
 
       const _doRedirect = function(e) {
-        $.post('/ajax/history', function(data) {
+        $.post('/ajax/history', { history_write_in_progress: true }, function(data) {
 
           $.each(data, function(index, value) {
             // Also add the item to the browser's state history.

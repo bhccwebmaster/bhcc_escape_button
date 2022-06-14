@@ -20,11 +20,26 @@ class WriteHistoryController extends ControllerBase {
    */
   public function writeHistory(): AjaxResponse {
 
+    // Grab the key_value storage.
+    $key_value_storage = \Drupal::keyValue('bhcc_escape_button');
+
+    $history_write_in_progress = \Drupal::request()->get('history_write_in_progress');
+
+    // Default to false for whether we're in progress.
+    $key_value_storage->set('history_write_in_progress', FALSE);
+
+    // Grab the parameter passed through from the js library.
+    if (!empty($history_write_in_progress) && $history_write_in_progress) {
+      $key_value_storage->set('history_write_in_progress', TRUE);
+    }
+
     // Set up the response we'll be adding to.
     $response = new AjaxResponse();
 
-    // Grab the key_value storage.
-    $key_value_storage = \Drupal::keyValue('bhcc_escape_button');
+    // Return out if we're not in progress.
+    if (!$history_write_in_progress) {
+      return $response;
+    }
 
     // Reset these values if they're missing.
     $key_value_storage->setIfNotExists('key', 0);
@@ -51,7 +66,6 @@ class WriteHistoryController extends ControllerBase {
       return $response;
     }
     else {
-      $key_value_storage->set('history_write_in_progress', TRUE);
 
       // If we get here, we still have redirect items to get through.
       // Increment the key so on the next go round we'll have the next page.
