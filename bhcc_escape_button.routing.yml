@@ -1,0 +1,6 @@
+bhcc_escape_button.history:
+  path: '/ajax/history'
+  defaults:
+    _controller: '\Drupal\bhcc_escape_button\Controller\WriteHistoryController::writeHistory'
+  requirements:
+    _permission: 'access content'

@@ -1,0 +1,7 @@
+bhcc_escape_button.history:
+  title: 'History'
+  route_name: bhcc_escape_button.history
+  options:
+    attributes:
+      class:
+        - use-ajax
