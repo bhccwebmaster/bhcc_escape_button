@@ -4,4 +4,5 @@ rewrite_history:
     js/escape_write_history_items.js: {}
   dependencies:
     - core/drupal
+    - core/drupal.ajax
     - core/jquery

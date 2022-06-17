@@ -51,18 +51,10 @@ class EscapeButtonBlock extends BlockBase {
   public function build() {
 
     $build['#attached']['library'][] = 'bhcc_escape_button/rewrite_history';
-    $key_value_storage = \Drupal::keyValue('bhcc_escape_button');
-    $bhcc_escape_button = $key_value_storage->getAll();
-
-    $key_value_storage->setIfNotExists('history_node_ids', self::HISTORY_ITEMS);
-
-    if (empty($bhcc_escape_button['history_write_in_progress'])) {
-      $bhcc_escape_button['history_write_in_progress'] = FALSE;
-    }
 
     // Pass through storage data to js library.
     // Used for testing whether redirecting is in progress.
-    $build['#attached']['drupalSettings']['bhccEscapeButton']['history_write_in_progress'] = $bhcc_escape_button['history_write_in_progress'];
+    $build['#attached']['drupalSettings']['bhccEscapeButton']['historyItems'] = self::HISTORY_ITEMS;
 
     // If we're on one of the redirect pages, don't show the escape button.
     $node = \Drupal::routeMatch()->getParameter('node');
