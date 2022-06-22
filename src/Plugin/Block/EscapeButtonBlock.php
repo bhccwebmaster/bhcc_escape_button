@@ -3,6 +3,7 @@
 namespace Drupal\bhcc_escape_button\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Link;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
@@ -83,6 +84,26 @@ class EscapeButtonBlock extends BlockBase {
     $build['link'] = $link;
 
     return $build;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts() {
+    return Cache::mergeContexts(parent::getCacheContexts(), ['route']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheTags() {
+
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if ($node instanceof NodeInterface) {
+      return Cache::mergeTags(parent::getCacheTags(), $node->getCacheTags());
+    }
+
+    return parent::getCacheTags();
   }
 
 }
