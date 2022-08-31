@@ -38,16 +38,32 @@ class EscapeButtonBlock extends BlockBase {
     $history = array_filter($config['history']);
     $display = array_filter($config['display']);
 
-    $node = \Drupal::request()->attributes->get('node');
+    if (!empty($display['paths'])) {
 
-    // If we're not on a node page, don't show the block.
-    if (!$node instanceof NodeInterface) {
-      return AccessResult::forbidden();
+      $current_path = \Drupal::service('path.current')->getPath();
+      $current_path_alias = \Drupal::service('path_alias.manager')->getAliasByPath($current_path);
+
+      // Split the content of the paths field into an array.
+      $paths = preg_split("(\r\n?|\n)", $display['paths']);
+
+      // Loop through the values.
+      foreach ($paths as $path) {
+
+        // Generate the regular expression to match the given path.
+        $path = str_replace('*', '.*', $path);
+        $pattern = '#^' . ltrim($path, '/') . '$#';
+
+        // If the expression matches against the current path, allow the block.
+        if (preg_match($pattern, ltrim($current_path_alias, '/'))) {
+          return AccessResult::allowed();
+        }
+      }
     }
 
-    // If the node we're on is neither a history nor a display node,
-    // don't show the block.
-    if (!in_array($node->id(), $history) && !in_array($node->id(), $display)) {
+    $node = \Drupal::request()->attributes->get('node');
+
+    // If the node we're on isn't one of the history items, hide the block.
+    if (!in_array($node->id(), $history)) {
       return AccessResult::forbidden();
     }
 
@@ -115,26 +131,17 @@ class EscapeButtonBlock extends BlockBase {
 
     $form['display'] = [
       '#type' => 'fieldset',
-      '#title' => t('Show the escape button on these pages'),
+      '#title' => t('Display'),
       '#collapsible' => FALSE,
       '#collapsed' => FALSE,
     ];
 
-    for ($i = 0; $i < 5; $i++) {
-
-      $node = NULL;
-      if (!empty($display[$i])) {
-
-        // Populate the item if it has a value.
-        $node = Node::load($display[$i]);
-      }
-
-      $form['display'][$i] = [
-        '#type' => 'entity_autocomplete',
-        '#target_type' => 'node',
-        '#default_value' => $node ?? NULL,
-      ];
-    }
+    $form['display']['paths'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Show the escape button on these paths'),
+      '#description' => "Specify pages by using their paths. Enter one path per line. The '*' character is a wildcard. An example path is /news/* for every news page.",
+      '#default_value' => $display['paths'] ?? NULL,
+    ];
 
     $form['history'] = [
       '#type' => 'fieldset',
