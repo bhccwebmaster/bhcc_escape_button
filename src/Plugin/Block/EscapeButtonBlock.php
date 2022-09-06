@@ -63,7 +63,8 @@ class EscapeButtonBlock extends BlockBase {
     $node = \Drupal::request()->attributes->get('node');
 
     // If the node we're on isn't one of the history items, hide the block.
-    if (!in_array($node->id(), $history)) {
+    // Also hide if not a node. (History can only be nodes?)
+    if (!$node instanceof NodeInterface || !in_array($node->id(), $history)) {
       return AccessResult::forbidden();
     }
 
