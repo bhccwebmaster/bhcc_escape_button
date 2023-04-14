@@ -10,8 +10,12 @@ use Drupal\Core\Link;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
-use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\path_alias\AliasManagerInterface;
+use Drupal\Core\Path\CurrentPathStack;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 
 /**
  * Provides an escape button block.
@@ -21,7 +25,88 @@ use Drupal\node\NodeInterface;
  *   admin_label = @Translation("Escape button"),
  * )
  */
-class EscapeButtonBlock extends BlockBase {
+class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * Assign the node block.
+   *
+   * @var \Drupal\node\NodeInterface
+   */
+  protected $node;
+
+  /**
+   * Current path service.
+   *
+   * @var \Drupal\Core\Path\CurrentPathStack
+   */
+  protected $currentPathStack;
+
+  /**
+   * Entity Type Manager.
+   *
+   * @var Drupal\Core\Entity\EntityTypeManager
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Route match service.
+   *
+   * @var \Drupal\Core\Routing\CurrentRouteMatch
+   */
+  protected $routeMatch;
+
+
+  /**
+   * Path alias manager.
+   *
+   * @var \Drupal\path_alias\AliasManagerInterface
+   */
+  protected $pathAliasManager;
+
+  /**
+   * Escape Button constructor.
+   *
+   * @param array $configuration
+   *   The configuration to use.
+   * @param string $plugin_id
+   *   The plugin id.
+   * @param array $plugin_definition
+   *   The plugin definition.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match.
+   * @param \Drupal\path_alias\AliasManagerInterface $alias_manager
+   *   The path alias manager.
+   * @param Drupal\Core\Path\CurrentPathStack $current_path_stack
+   *   The current path stack.
+   */
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, RouteMatchInterface $route_match, AliasManagerInterface $alias_manager, CurrentPathStack $current_path_stack) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->routeMatch = $route_match;
+    $this->currentPathStack = $current_path_stack;
+    $this->pathAliasManager = $alias_manager;
+
+    if ($this->routeMatch->getParameter('node')) {
+      $this->node = $this->routeMatch->getParameter('node');
+      if (!$this->node instanceof NodeInterface) {
+        $node_storage = $this->entityTypeManager->getStorage('node');
+        $this->node = $node_storage->load($this->node);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('current_route_match'),
+      $container->get('path_alias.manager'),
+      $container->get('request_stack'),
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -40,8 +125,8 @@ class EscapeButtonBlock extends BlockBase {
 
     if (!empty($display['paths'])) {
 
-      $current_path = \Drupal::service('path.current')->getPath();
-      $current_path_alias = \Drupal::service('path_alias.manager')->getAliasByPath($current_path);
+      $current_path = $this->currentPathStack->getPath();
+      $current_path_alias = $this->pathAliasManager->getPathByAlias($current_path);
 
       // Split the content of the paths field into an array.
       $paths = preg_split("(\r\n?|\n)", $display['paths']);
@@ -60,7 +145,7 @@ class EscapeButtonBlock extends BlockBase {
       }
     }
 
-    $node = \Drupal::request()->attributes->get('node');
+    $node = $this->routeMatch->getParameter('node');
 
     // If the node we're on isn't one of the history items, hide the block.
     // Also hide if not a node. (History can only be nodes?)
@@ -86,7 +171,7 @@ class EscapeButtonBlock extends BlockBase {
     $build['#attached']['drupalSettings']['bhccEscapeButton']['historyItems'] = $history;
 
     // If we're on one of the redirect pages, don't show the escape button.
-    $node = \Drupal::routeMatch()->getParameter('node');
+    $node = $this->routeMatch->getParameter('node');
     if ($node instanceof NodeInterface) {
       if (in_array($node->id(), $history)) {
         return $build;
@@ -95,7 +180,7 @@ class EscapeButtonBlock extends BlockBase {
 
     // Generate link to news page.
     $link_url = Url::fromRoute('entity.node.canonical', ['node' => 23086], [
-      'absolute' => TRUE
+      'absolute' => TRUE,
     ]);
     $link_title = Markup::create('<span class="escape-button__title">Leave site</span><span class="escape-button__subtitle font-weight-light">Click or press Esc</span>');
     $link = Link::fromTextAndUrl($link_title, $link_url)->toRenderable();
@@ -119,6 +204,7 @@ class EscapeButtonBlock extends BlockBase {
    */
   public function blockForm($form, FormStateInterface $form_state) {
 
+    $node_storage = $this->entityTypeManager->getStorage('node');
     $form = parent::blockForm($form, $form_state);
     $config = $this->getConfiguration();
 
@@ -132,7 +218,7 @@ class EscapeButtonBlock extends BlockBase {
 
     $form['display'] = [
       '#type' => 'fieldset',
-      '#title' => t('Display'),
+      '#title' => $this->t('Display'),
       '#collapsible' => FALSE,
       '#collapsed' => FALSE,
     ];
@@ -140,13 +226,13 @@ class EscapeButtonBlock extends BlockBase {
     $form['display']['paths'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Show the escape button on these paths'),
-      '#description' => "Specify pages by using their paths. Enter one path per line. The '*' character is a wildcard. An example path is /news/* for every news page.",
+      '#description' => $this->t("Specify pages by using their paths. Enter one path per line. The '*' character is a wildcard. An example path is /news/* for every news page."),
       '#default_value' => $display['paths'] ?? NULL,
     ];
 
     $form['history'] = [
       '#type' => 'fieldset',
-      '#title' => t('History pages'),
+      '#title' => $this->t('History pages'),
       '#collapsible' => FALSE,
       '#collapsed' => FALSE,
     ];
@@ -157,7 +243,7 @@ class EscapeButtonBlock extends BlockBase {
       if (!empty($history[$i])) {
 
         // Populate the item if it has a value.
-        $node = Node::load($history[$i]);
+        $node = $node_storage->load($history[$i]);
       }
 
       $form['history'][$i] = [
@@ -191,7 +277,7 @@ class EscapeButtonBlock extends BlockBase {
    */
   public function getCacheTags() {
 
-    $node = \Drupal::routeMatch()->getParameter('node');
+    $node = $this->routeMatch->getParameter('node');
     if ($node instanceof NodeInterface) {
       return Cache::mergeTags(parent::getCacheTags(), $node->getCacheTags());
     }
