@@ -104,7 +104,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       $plugin_definition,
       $container->get('current_route_match'),
       $container->get('path_alias.manager'),
-      $container->get('request_stack'),
+      $container->get('current_path_stack'),
     );
   }
 
