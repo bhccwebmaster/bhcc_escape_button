@@ -39,7 +39,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
    *
    * @var \Drupal\Core\Path\CurrentPathStack
    */
-  protected $currentPathStack;
+  protected $currentPath;
 
   /**
    * Entity Type Manager.
@@ -76,13 +76,13 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
    *   The route match.
    * @param \Drupal\path_alias\AliasManagerInterface $alias_manager
    *   The path alias manager.
-   * @param Drupal\Core\Path\CurrentPathStack $current_path_stack
+   * @param Drupal\Core\Path\CurrentPathStack $current_path
    *   The current path stack.
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, RouteMatchInterface $route_match, AliasManagerInterface $alias_manager, CurrentPathStack $current_path_stack) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, RouteMatchInterface $route_match, AliasManagerInterface $alias_manager, CurrentPathStack $current_path) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->routeMatch = $route_match;
-    $this->currentPathStack = $current_path_stack;
+    $this->currentPath = $current_path;
     $this->pathAliasManager = $alias_manager;
 
     if ($this->routeMatch->getParameter('node')) {
@@ -104,7 +104,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       $plugin_definition,
       $container->get('current_route_match'),
       $container->get('path_alias.manager'),
-      $container->get('current_path_stack'),
+      $container->get('path.current'),
     );
   }
 
@@ -125,7 +125,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
 
     if (!empty($display['paths'])) {
 
-      $current_path = $this->currentPathStack->getPath();
+      $current_path = $this->currentPath->getPath();
       $current_path_alias = $this->pathAliasManager->getPathByAlias($current_path);
 
       // Split the content of the paths field into an array.
