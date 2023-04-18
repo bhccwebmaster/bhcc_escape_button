@@ -152,7 +152,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
 
     // If the node we're on isn't one of the history items, hide the block.
     // Also hide if not a node. (History can only be nodes?)
-    if (!in_array($this->node->id(), $history)) {
+    if (!$this->node instanceof NodeInterface || !in_array($this->node->id(), $history)) {
       return AccessResult::forbidden();
     }
 
@@ -182,7 +182,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
     }
 
     // Generate link to news page.
-    $link_url = Url::fromRoute('entity.node.canonical', ['node' => 23086], [
+    $link_url = Url::fromRoute('entity.node.canonical', ['node' => $history[0]], [
       'absolute' => TRUE,
     ]);
     $link_title = Markup::create('<span class="escape-button__title">Leave site</span><span class="escape-button__subtitle font-weight-light">Click or press Esc</span>');

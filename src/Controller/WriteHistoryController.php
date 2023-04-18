@@ -8,6 +8,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Class bhcc escape button WriteHistoryController.
@@ -21,6 +22,13 @@ class WriteHistoryController extends ControllerBase {
   protected $entityTypeManager;
 
   /**
+   * Core request_stack service.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
    * Route match service.
    *
    * @var Drupal\Core\Routing\CurrentRouteMatch
@@ -30,8 +38,9 @@ class WriteHistoryController extends ControllerBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(RouteMatchInterface $route_match) {
+  public function __construct(RouteMatchInterface $route_match, RequestStack $request_stack) {
     $this->routeMatch = $route_match;
+    $this->requestStack = $request_stack;
   }
 
   /**
@@ -40,6 +49,7 @@ class WriteHistoryController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('current_route_match'),
+      $container->get('request_stack'),
     );
   }
 
@@ -52,7 +62,7 @@ class WriteHistoryController extends ControllerBase {
   public function writeHistory(): AjaxResponse {
 
     // Grab the parameter passed through from the js library.
-    $node_id = $this->routeMatch->getParameter('nodeID');
+    $node_id = $this->requestStack->getCurrentRequest()->get('nodeID');
 
     // Set up the response we'll be adding to.
     $response = new AjaxResponse();
