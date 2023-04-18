@@ -13,7 +13,6 @@ use Drupal\node\NodeInterface;
  * Class bhcc escape button WriteHistoryController.
  */
 class WriteHistoryController extends ControllerBase {
-
   /**
    * Entity Type Manager.
    *

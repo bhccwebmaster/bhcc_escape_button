@@ -16,6 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\path_alias\AliasManagerInterface;
 use Drupal\Core\Path\CurrentPathStack;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\core\Entity\EntityTypeManager;
 
 /**
  * Provides an escape button block.
@@ -78,12 +79,15 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
    *   The path alias manager.
    * @param Drupal\Core\Path\CurrentPathStack $current_path
    *   The current path stack.
+   * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, RouteMatchInterface $route_match, AliasManagerInterface $alias_manager, CurrentPathStack $current_path) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, RouteMatchInterface $route_match, AliasManagerInterface $alias_manager, CurrentPathStack $current_path, EntityTypeManager $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->routeMatch = $route_match;
     $this->currentPath = $current_path;
     $this->pathAliasManager = $alias_manager;
+    $this->entityTypeManager = $entity_type_manager;
 
     if ($this->routeMatch->getParameter('node')) {
       $this->node = $this->routeMatch->getParameter('node');
@@ -105,6 +109,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       $container->get('current_route_match'),
       $container->get('path_alias.manager'),
       $container->get('path.current'),
+      $container->get('entity_type.manager'),
     );
   }
 
@@ -126,7 +131,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
     if (!empty($display['paths'])) {
 
       $current_path = $this->currentPath->getPath();
-      $current_path_alias = $this->pathAliasManager->getPathByAlias($current_path);
+      $current_path_alias = $this->pathAliasManager->getAliasByPath($current_path);
 
       // Split the content of the paths field into an array.
       $paths = preg_split("(\r\n?|\n)", $display['paths']);
