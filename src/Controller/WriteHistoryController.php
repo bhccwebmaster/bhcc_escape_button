@@ -11,15 +11,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
- * Class bhcc escape button WriteHistoryController.
+ * Class bhcc escape button write history controller.
  */
 class WriteHistoryController extends ControllerBase {
-  /**
-   * Entity Type Manager.
-   *
-   * @var Drupal\Core\Entity\EntityTypeManager
-   */
-  protected $entityTypeManager;
 
   /**
    * Core request_stack service.

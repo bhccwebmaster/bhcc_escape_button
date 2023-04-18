@@ -181,7 +181,8 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       }
     }
 
-    // Generate link to news page.
+    // Generate link to the first page in the history.
+    // @todo make this seperatly configurable.
     $link_url = Url::fromRoute('entity.node.canonical', ['node' => $history[0]], [
       'absolute' => TRUE,
     ]);
