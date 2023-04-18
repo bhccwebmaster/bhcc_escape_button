@@ -150,11 +150,9 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       }
     }
 
-    $node = $this->routeMatch->getParameter('node');
-
     // If the node we're on isn't one of the history items, hide the block.
     // Also hide if not a node. (History can only be nodes?)
-    if (!$node instanceof NodeInterface || !in_array($node->id(), $history)) {
+    if (!in_array($this->node->id(), $history)) {
       return AccessResult::forbidden();
     }
 

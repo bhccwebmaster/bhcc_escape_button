@@ -7,7 +7,7 @@ use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\node\NodeInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class bhcc escape button WriteHistoryController.
@@ -28,25 +28,19 @@ class WriteHistoryController extends ControllerBase {
   protected $routeMatch;
 
   /**
-   * Assign the node block.
-   *
-   * @var \Drupal\node\NodeInterface
-   */
-  protected $node;
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, RouteMatchInterface $route_match) {
+  public function __construct(RouteMatchInterface $route_match) {
     $this->routeMatch = $route_match;
-    // $this->entityTypeManager = $entity_type_manager;
-    if ($this->routeMatch->getParameter('node')) {
-      $this->node = $this->routeMatch->getParameter('node');
-      if (!$this->node instanceof NodeInterface) {
-        $node_storage = $this->entityTypeManager->getStorage('node');
-        $this->node = $node_storage->load($this->node);
-      }
-    }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('current_route_match'),
+    );
   }
 
   /**
