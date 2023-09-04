@@ -5,6 +5,78 @@
 
 (function ($, Drupal) {
 
+  let keypressCounter = 0;
+  let lastKeyWasModified = false;
+  let timeoutTime = 5000; // milliseconds
+  let keypressTimeoutId = null;
+  let overlay;
+
+  /**
+   * Reset keypress timer.
+   */
+  function resetKeypressTimer() {
+
+    clearTimeout(keypressTimeoutId);
+    keypressTimeoutId = null;
+
+    keypressCounter = 0;
+    // this.$updateSpan.innerText = this.i18n.t('timedOut');
+
+    // this.timeoutMessageId = setTimeout(function () {
+    //   this.$updateSpan.innerText = '';
+    // }.bind(this), this.timeoutTime);
+
+    // this.updateIndicator();
+  }
+
+  /**
+   * Set keypress timer.
+   */
+  function setKeypressTimer() {
+
+    // Clear any existing timeout. This is so only one timer is running even if
+    // there are multiple keypresses in quick succession.
+    clearTimeout(keypressTimeoutId);
+
+    // Set a fresh timeout
+    keypressTimeoutId = setTimeout(
+      resetKeypressTimer,
+      timeoutTime
+    );
+  }
+
+  /**
+   * Display the overlay.
+   */
+  function displayBlankOverlay() {
+
+    $('#bhcc-escape-overlay').removeClass('hidden');
+  }
+
+  /**
+   * Initialise the overlay.
+   *   - Creates markup.
+   *   - Adds to body.
+   */
+  function initBlankOverlay() {
+
+    overlay = $('<div id="bhcc-escape-overlay"></div>')
+      .addClass([
+        'hidden',
+      ])
+      .attr('style', [
+        'background: white;',
+        'position: absolute;',
+        'top: 0;',
+        'left: 0;',
+        'width: 100%;',
+        'height: 100%;',
+        'z-index: 1000;',
+      ].join(' '));
+
+    $('body').prepend(overlay);
+  }
+
   Drupal.behaviors.escape_write_history_items = {
 
     attach: function (context) {
@@ -85,15 +157,71 @@
         }
       });
 
-      // Run the history re-write if the button is clicked.
-      $('#escape-button', context).on('click', {openNewTab: true}, doRedirect);
+      // Initialise the blank overlay to hide the page with while the following
+      // one loads in.
+      // This is particularly important for users with slow network connections.
+      initBlankOverlay();
 
-      // Or if a keyboard button is pressed (we check whether it's the Esc key).
-      $(document).on('keydown', function(e) {
-        if (e.key && e.key === 'Escape') {
+      // Run the history re-write if the button is clicked.
+      $('#escape-button', context).on('click', {openNewTab: true}, function() {
+        displayBlankOverlay();
+        doRedirect();
+      });
+
+      document.addEventListener('keyup', function(event) {
+
+        // Or if a keyboard button is pressed (we check whether it's the Esc key).
+        if (event.key && event.key === 'Escape') {
+          displayBlankOverlay();
           doRedirect();
         }
-      });
+
+        // Or the shift key is pressed 3 times in quick succession.
+        // Detect if the 'Shift' key has been pressed. We want to only do things if it
+        // was pressed by itself and not in a combination with another key—so we keep
+        // track of whether the preceding keyup had shiftKey: true on it, and if it
+        // did, we ignore the next Shift keyup event.
+        //
+        // This works because using Shift as a modifier key (e.g. pressing Shift + A)
+        // will fire TWO keyup events, one for A (with e.shiftKey: true) and the other
+        // for Shift (with e.shiftKey: false).
+        if (
+          (event.key === 'Shift' || event.keyCode === 16 || event.which === 16) &&
+          !lastKeyWasModified
+        ) {
+          keypressCounter += 1;
+
+          // Update the indicator before the below if statement can reset it back to 0
+          // updateIndicator();
+
+          // Clear the timeout for the keypress timeout message clearing itself
+          // if (timeoutMessageId !== null) {
+          //   clearTimeout(timeoutMessageId);
+          //   timeoutMessageId = null;
+          // }
+
+          if (keypressCounter >= 3) {
+            keypressCounter = 0;
+
+            // if (keypressTimeoutId !== null) {
+            //   clearTimeout(keypressTimeoutId);
+            //   keypressTimeoutId = null;
+            // }
+
+            displayBlankOverlay();
+            doRedirect();
+          }
+
+          setKeypressTimer();
+        } else if (keypressTimeoutId !== null) {
+          // If the user pressed any key other than 'Shift', after having pressed
+          // 'Shift' and activating the timer, stop and reset the timer.
+          resetKeypressTimer();
+        }
+
+        // Keep track of whether the Shift modifier key was held during this keypress
+        lastKeyWasModified = event.shiftKey;
+      }, true);
 
     }
   }
