@@ -77,10 +77,13 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
    *   The route match.
    * @param \Drupal\path_alias\AliasManagerInterface $alias_manager
    *   The path alias manager.
-   * @param Drupal\Core\Path\CurrentPathStack $current_path
+   * @param \Drupal\Core\Path\CurrentPathStack $current_path
    *   The current path stack.
    * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
    *   The entity type manager.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function __construct(array $configuration, $plugin_id, array $plugin_definition, RouteMatchInterface $route_match, AliasManagerInterface $alias_manager, CurrentPathStack $current_path, EntityTypeManager $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -182,11 +185,16 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
     }
 
     // Generate link to the first page in the history.
-    // @todo make this seperatly configurable.
-    $link_url = Url::fromRoute('entity.node.canonical', ['node' => $history[0]], [
-      'absolute' => TRUE,
-    ]);
-    $link_title = Markup::create('<span class="escape-button__title">Leave site</span><span class="escape-button__subtitle font-weight-light">Click or press Esc</span>');
+    if (!empty($config['new_tab'])) {
+      // Use the url from config if possible.
+      $link_url = Url::fromUri($config['new_tab']['url']);
+    }
+    else {
+      // Otherwise default to the front page.
+      $link_url = Url::fromRoute('<front>');
+    }
+
+    $link_title = Markup::create('Exit this page');
     $link = Link::fromTextAndUrl($link_title, $link_url)->toRenderable();
 
     // Add attributes to the link.
@@ -194,6 +202,8 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       'target' => '_blank',
       'id' => 'escape-button',
       'class' => [
+        'button',
+        'button--warning',
         'escape-button',
       ],
     ];
@@ -220,6 +230,10 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       $display = $config['display'];
     }
 
+    if (!empty($config['new_tab'])) {
+      $new_tab = $config['new_tab'];
+    }
+
     $form['display'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Display'),
@@ -232,6 +246,20 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       '#title' => $this->t('Show the escape button on these paths'),
       '#description' => $this->t("Specify pages by using their paths. Enter one path per line. The '*' character is a wildcard. An example path is /news/* for every news page."),
       '#default_value' => $display['paths'] ?? NULL,
+    ];
+
+    $form['new_tab'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Page to open in a new tab'),
+      '#collapsible' => FALSE,
+      '#collapsed' => FALSE,
+    ];
+
+    $form['new_tab']['url'] = [
+      '#type' => 'url',
+      '#title' => $this->t('Full URL'),
+      '#description' => $this->t('The full URL to open in a new tab when the escape button is triggered.'),
+      '#default_value' => $new_tab['url'] ?? NULL,
     ];
 
     $form['history'] = [
@@ -254,6 +282,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
         '#type' => 'entity_autocomplete',
         '#target_type' => 'node',
         '#default_value' => $node ?? NULL,
+        '#maxlength' => NULL,
       ];
     }
 
@@ -267,6 +296,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
 
     $this->setConfigurationValue('display', $form_state->getValue('display'));
     $this->setConfigurationValue('history', $form_state->getValue('history'));
+    $this->setConfigurationValue('new_tab', $form_state->getValue('new_tab'));
   }
 
   /**
