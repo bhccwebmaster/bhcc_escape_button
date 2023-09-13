@@ -20,13 +20,7 @@
     keypressTimeoutId = null;
 
     keypressCounter = 0;
-    // this.$updateSpan.innerText = this.i18n.t('timedOut');
 
-    // this.timeoutMessageId = setTimeout(function () {
-    //   this.$updateSpan.innerText = '';
-    // }.bind(this), this.timeoutTime);
-
-    // this.updateIndicator();
   }
 
   /**
@@ -35,7 +29,7 @@
   function setKeypressTimer() {
 
     // Clear any existing timeout. This is so only one timer is running even if
-    // there are multiple keypresses in quick succession.
+    // there are multiple key presses in quick succession.
     clearTimeout(keypressTimeoutId);
 
     // Set a fresh timeout
@@ -80,6 +74,8 @@
   Drupal.behaviors.escape_write_history_items = {
 
     attach: function (context) {
+
+      console.log('hello');
 
       let settings = drupalSettings.bhccEscapeButton;
 
@@ -139,6 +135,7 @@
       let historyItemKey = window.sessionStorage.getItem('historyItemKey');
 
       $(document).ready(function() {
+
         // Check whether we're in the middle of running the redirects.
         if (window.sessionStorage.getItem('inProcessOfRedirecting') === 'true') {
 
@@ -163,9 +160,9 @@
       initBlankOverlay();
 
       // Run the history re-write if the button is clicked.
-      $('#escape-button', context).on('click', {openNewTab: true}, function() {
-        displayBlankOverlay();
-        doRedirect();
+      $('#escape-button', context).on('click', {openNewTab: true}, function(e) {
+        displayBlankOverlay(e);
+        doRedirect(e);
       });
 
       document.addEventListener('keyup', function(event) {
@@ -173,7 +170,9 @@
         // Or if a keyboard button is pressed (we check whether it's the Esc key).
         if (event.key && event.key === 'Escape') {
           displayBlankOverlay();
-          doRedirect();
+
+          // Trigger a click event on the button so the new window opens.
+          $('#escape-button', context).trigger('click');
         }
 
         // Or the shift key is pressed 3 times in quick succession.
@@ -191,25 +190,13 @@
         ) {
           keypressCounter += 1;
 
-          // Update the indicator before the below if statement can reset it back to 0
-          // updateIndicator();
-
-          // Clear the timeout for the keypress timeout message clearing itself
-          // if (timeoutMessageId !== null) {
-          //   clearTimeout(timeoutMessageId);
-          //   timeoutMessageId = null;
-          // }
-
           if (keypressCounter >= 3) {
             keypressCounter = 0;
 
-            // if (keypressTimeoutId !== null) {
-            //   clearTimeout(keypressTimeoutId);
-            //   keypressTimeoutId = null;
-            // }
-
             displayBlankOverlay();
-            doRedirect();
+
+            // Trigger a click event on the button so the new window opens.
+            $('#escape-button', context).trigger('click');
           }
 
           setKeypressTimer();
