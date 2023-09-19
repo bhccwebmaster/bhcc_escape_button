@@ -204,7 +204,17 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       'class' => [
         'button',
         'button--warning',
-        'escape-button',
+        'pos:fixed',
+        'bottom:0', // 1rem
+        'right:7', // 2rem
+        'pad-h:3',
+        'pad-v:-2',
+        'default-shadow',
+        'overflow:hidden',
+        'text-dec:none',
+        'text:2',
+        'z-index:100:force',
+        'min-w:auto',
       ],
     ];
 
