@@ -209,7 +209,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
         'right:7', // 2rem
         'pad-h:3',
         'pad-v:-2',
-        'default-shadow',
+        'shadow:default',
         'overflow:hidden',
         'text-dec:none',
         'text:2',
