@@ -75,8 +75,6 @@
 
     attach: function (context) {
 
-      console.log('hello');
-
       let settings = drupalSettings.bhccEscapeButton;
 
       // Store some URLs to cycle through, creating a safe browser history.
