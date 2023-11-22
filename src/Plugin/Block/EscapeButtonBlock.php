@@ -142,6 +142,11 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       // Loop through the values.
       foreach ($paths as $path) {
 
+        // Ignore empty paths, causes false positives.
+        if (empty($path)) {
+          continue;
+        }
+
         // Generate the regular expression to match the given path.
         $path = str_replace('*', '.*', $path);
         $pattern = '#^' . ltrim($path, '/') . '$#';
