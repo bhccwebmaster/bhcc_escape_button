@@ -190,7 +190,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
     }
 
     // Generate link to the first page in the history.
-    if (!empty($config['new_tab'])) {
+    if ($config['new_tab'] && !empty($config['new_tab']['url'])) {
       // Use the url from config if possible.
       $link_url = Url::fromUri($config['new_tab']['url']);
     }
