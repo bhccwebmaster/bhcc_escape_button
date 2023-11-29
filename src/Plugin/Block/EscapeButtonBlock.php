@@ -142,6 +142,11 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       // Loop through the values.
       foreach ($paths as $path) {
 
+        // Ignore empty paths, causes false positives.
+        if (empty($path)) {
+          continue;
+        }
+
         // Generate the regular expression to match the given path.
         $path = str_replace('*', '.*', $path);
         $pattern = '#^' . ltrim($path, '/') . '$#';
@@ -185,7 +190,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
     }
 
     // Generate link to the first page in the history.
-    if (!empty($config['new_tab'])) {
+    if (!empty($config['new_tab']) && !empty($config['new_tab']['url'])) {
       // Use the url from config if possible.
       $link_url = Url::fromUri($config['new_tab']['url']);
     }
