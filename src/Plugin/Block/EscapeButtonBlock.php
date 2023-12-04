@@ -206,6 +206,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
     $link['#attributes'] = [
       'target' => '_blank',
       'id' => 'escape-button',
+      'aria-label' => 'Exit this page (opens in a new tab)',
       'class' => [
         'button',
         'button--warning',
