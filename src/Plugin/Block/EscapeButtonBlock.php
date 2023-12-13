@@ -208,19 +208,20 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       'id' => 'escape-button',
       'class' => [
         'button',
-        'button--warning',
+        'color:white',
+        'font:semi',
+        'bg:escape-button',
         'pos:fixed',
-        'bottom:0',
-        'right:7',
         'pad-h:3',
         'pad-v:-2',
-        'shadow:default',
+        'shadow:medium',
         'overflow:hidden',
-        'text-dec:none',
         'text:2',
         'z-index:100:force',
         'min-w:auto',
+        'hover:bg:escape-button',
       ],
+      'style' => 'bottom: 1rem; right: 2rem;',
     ];
 
     $build['link'] = $link;
