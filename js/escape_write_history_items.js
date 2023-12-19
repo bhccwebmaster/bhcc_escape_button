@@ -10,6 +10,26 @@
   let timeoutTime = 5000; // milliseconds
   let keypressTimeoutId = null;
   let overlay;
+  let indicatorContainer = $('#js-exit-keypress-indicator');
+
+  /**
+   * Display the overlay.
+   */
+  function updateIndicator() {
+
+    if (!indicatorContainer) {
+      return;
+    }
+
+    // Make the container visible/hidden.
+    $(indicatorContainer).toggleClass('hidden', keypressCounter === 0);
+
+    // Loop through the 3 lights and update according to keypress index.
+    const indicators = $('.exit-keypress-indicator__light', indicatorContainer);
+    $.each(indicators, function(index, indicator) {
+      $(indicator).toggleClass('exit-keypress-indicator__light--on', index < keypressCounter);
+    })
+  }
 
   /**
    * Reset keypress timer.
@@ -21,6 +41,8 @@
 
     keypressCounter = 0;
 
+    // Reset keypress indicator.
+    updateIndicator();
   }
 
   /**
@@ -92,7 +114,7 @@
         let historyItemKey = window.sessionStorage.getItem('historyItemKey');
 
         // If there's no value currently stored, initialise at 1.
-        // @todo when seperating the config for the escape and history,
+        // @todo when separating the config for the escape and history,
         //       then set this back to 0.
         if (historyItemKey == null) {
           window.sessionStorage.setItem('historyItemKey', '1');
@@ -187,6 +209,7 @@
           !lastKeyWasModified
         ) {
           keypressCounter += 1;
+          updateIndicator();
 
           if (keypressCounter >= 3) {
             keypressCounter = 0;

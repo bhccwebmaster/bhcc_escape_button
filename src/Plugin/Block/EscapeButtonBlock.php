@@ -11,6 +11,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Path\CurrentPathStack;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\Markup;
+use Drupal\Core\Render\Renderer;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
@@ -56,13 +57,19 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
    */
   protected $routeMatch;
 
-
   /**
    * Path alias manager.
    *
    * @var \Drupal\path_alias\AliasManagerInterface
    */
   protected $pathAliasManager;
+
+  /**
+   * The renderer.
+   *
+   * @var \Drupal\Core\Render\Renderer
+   */
+  protected $renderer;
 
   /**
    * Escape Button constructor.
@@ -81,16 +88,19 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
    *   The current path stack.
    * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Render\Renderer $renderer
+   *   The renderer.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, RouteMatchInterface $route_match, AliasManagerInterface $alias_manager, CurrentPathStack $current_path, EntityTypeManager $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, RouteMatchInterface $route_match, AliasManagerInterface $alias_manager, CurrentPathStack $current_path, EntityTypeManager $entity_type_manager, Renderer $renderer) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->routeMatch = $route_match;
     $this->currentPath = $current_path;
     $this->pathAliasManager = $alias_manager;
     $this->entityTypeManager = $entity_type_manager;
+    $this->renderer = $renderer;
 
     if ($this->routeMatch->getParameter('node')) {
       $this->node = $this->routeMatch->getParameter('node');
@@ -113,6 +123,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       $container->get('path_alias.manager'),
       $container->get('path.current'),
       $container->get('entity_type.manager'),
+      $container->get('renderer'),
     );
   }
 
@@ -199,7 +210,34 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       $link_url = Url::fromRoute('<front>');
     }
 
-    $link_title = Markup::create('Exit this page');
+    // Build shift key indicator markup.
+    $indicator = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => [
+          'hidden',
+          'exit-keypress-indicator',
+        ],
+        'id' => [
+          'js-exit-keypress-indicator',
+        ],
+        'aria-hidden' => 'true',
+      ],
+    ];
+
+    // Create 3 inner indicator containers.
+    for ($i = 0; $i < 3; $i++) {
+      $indicator[] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => [
+            'exit-keypress-indicator__light',
+          ],
+        ],
+      ];
+    }
+
+    $link_title = Markup::create('Exit this page' . $this->renderer->renderPlain($indicator),);
     $link = Link::fromTextAndUrl($link_title, $link_url)->toRenderable();
 
     // Add attributes to the link.
