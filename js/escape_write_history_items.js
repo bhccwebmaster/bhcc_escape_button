@@ -181,6 +181,7 @@
 
       // Run the history re-write if the button is clicked.
       $('#escape-button', context).on('click', {openNewTab: true}, function(e) {
+        e.preventDefault();
         displayBlankOverlay(e);
         doRedirect(e);
       });
