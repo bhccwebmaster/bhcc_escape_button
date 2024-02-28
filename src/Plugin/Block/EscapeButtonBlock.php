@@ -247,9 +247,20 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       'aria-label' => 'Emergency exit this page',
       'class' => [
         'button',
-        'button--warning',
-        'escape-button',
+        'color:white',
+        'font:semi',
+        'bg:escape-button',
+        'pos:fixed',
+        'pad-h:3',
+        'pad-v:-2',
+        'shadow:medium',
+        'overflow:hidden',
+        'text:2',
+        'z-index:100:force',
+        'min-w:auto',
+        'hover:bg:escape-button',
       ],
+      'style' => 'bottom: 1rem; right: 2rem;',
     ];
 
     $build['link'] = $link;
