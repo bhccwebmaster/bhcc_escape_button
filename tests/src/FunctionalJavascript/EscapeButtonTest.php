@@ -122,6 +122,7 @@ class EscapeButtonTest extends WebDriverTestBase {
     $index = $count - 1;
     $current_node = $session->getCurrentUrl();
     $historyUrl = '';
+
     // Wait until the last history tab is visible.
     $session->wait(3000);
     for ($i = ($count - 1); $i >= 0; $i--) {
@@ -133,15 +134,6 @@ class EscapeButtonTest extends WebDriverTestBase {
       $session->executeScript("history.back();");
       $index--;
     }
-/*     while ($index) {
-      // Put in a wait here to prevent occasional 'page not found' errors.
-      $session->wait(3000);
-      $current_node = $session->getCurrentUrl();
-      $historyUrl = $this->baseUrl . "/node/" . $this->escapeButtonSettings['history'][$index];
-      $this->assertEquals($historyUrl, $current_node, "History tab of " . $historyUrl . " does not match current tab of " . $current_node);
-      $session->executeScript("history.back();");
-      $index--;
-    } */
 
     // Switch to the new_tab and verify the we're on the right url.
     $windowNames = $session->getWindowNames();
