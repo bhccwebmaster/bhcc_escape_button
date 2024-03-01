@@ -14,9 +14,8 @@ use function PHPUnit\Framework\assertCount;
  */
 class EscapeButtonTest extends WebDriverTestBase {
 
-  private const VISIBLE_PATH = '/visible-escape-button-path/*';
-  private const NOT_VISIBLE_PATH = '/not-visible-escape-button-path/*';
-  private const SCREENSHOT_PATH = 'sites/simpletest/browser_output/';
+  private const VISIBLE_PATH = '/visible-escape-button-path/';
+  private const NOT_VISIBLE_PATH = '/not-visible-escape-button-path/';
   private const NEW_TAB_URL = 'https://www.google.co.uk/';
 
   /**
@@ -46,15 +45,15 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     $this->escapeButtonSettings = [
       'display' => [
-        'paths' => self::VISIBLE_PATH,
+        'paths' => self::VISIBLE_PATH . '*',
       ],
       'new_tab' => [
         'url' => self::NEW_TAB_URL,
       ],
       'region' => 'content',
       'history' => [
-        // This needs to be initialised to an empty string.
-        '',
+        // This needs to be initialised.
+        '101',
       ],
     ];
   }
@@ -121,7 +120,7 @@ class EscapeButtonTest extends WebDriverTestBase {
     // Navigate to previous tab and use history.
     $index = $count - 1;
     $current_node = $session->getCurrentUrl();
-    $historyUrl = '';
+    $history_url = '';
 
     // Wait until the last history tab is visible.
     $session->wait(3000);
@@ -129,37 +128,37 @@ class EscapeButtonTest extends WebDriverTestBase {
       // Put in a wait here to prevent occasional 'page not found' errors.
       $session->wait(3000);
       $current_node = $session->getCurrentUrl();
-      $historyUrl = $this->baseUrl . "/node/" . $this->escapeButtonSettings['history'][$index];
-      $this->assertEquals($historyUrl, $current_node, "History tab of " . $historyUrl . " does not match current tab of " . $current_node);
+      $history_url = $this->baseUrl . "/node/" . $this->escapeButtonSettings['history'][$index];
+      $this->assertEquals($history_url, $current_node, "History tab of " . $history_url . " does not match current tab of " . $current_node);
       $session->executeScript("history.back();");
       $index--;
     }
 
     // Switch to the new_tab and verify the we're on the right url.
-    $windowNames = $session->getWindowNames();
-    assertCount(2, $windowNames, 'Exactly 2 tabs should be open, ' . count($windowNames) . ' tabs were found.');
-    if (count($windowNames) > 1) {
-      $session->switchToWindow($windowNames[1]);
+    $window_names = $session->getWindowNames();
+    assertCount(2, $window_names, 'Exactly 2 tabs should be open, ' . count($window_names) . ' tabs were found.');
+    if (count($window_names) > 1) {
+      $session->switchToWindow($window_names[1]);
     }
 
-    $newTabUrl = $session->getCurrentUrl();
-    $this->assertEquals(self::NEW_TAB_URL, $newTabUrl, "New tab url is wrong");
+    $new_tab_url = $session->getCurrentUrl();
+    $this->assertEquals(self::NEW_TAB_URL, $new_tab_url, "New tab url is wrong");
 
   }
 
   /**
    * Creates the escape button page.
    *
-   * @var boolean displayEscapeButton
+   * @var boolean display_escape_button
    */
-  private function createEscapePage($displayEscapeButton): void {
+  private function createEscapePage(bool $display_escape_button): void {
 
-    $aliasPath = '';
-    if ($displayEscapeButton) {
-      $aliasPath = self::VISIBLE_PATH;
+    $alias_path = '';
+    if ($display_escape_button) {
+      $alias_path = self::VISIBLE_PATH;
     }
     else {
-      $aliasPath = self::NOT_VISIBLE_PATH;
+      $alias_path = self::NOT_VISIBLE_PATH;
     }
 
     $title = $this->randomMachineName(8);
@@ -173,7 +172,7 @@ class EscapeButtonTest extends WebDriverTestBase {
     // Create the node with an alias path where the exit button will be visible.
     $this->container->get('entity_type.manager')->getStorage('path_alias')->create([
       'path' => '/node/' . $node->id(),
-      'alias' => $aliasPath . $node->id(),
+      'alias' => $alias_path . $node->id(),
     ])->save();
 
     // Place a block.
