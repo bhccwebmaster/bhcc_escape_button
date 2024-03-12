@@ -1,0 +1,24 @@
+block.settings.escape_button_block:
+  type: block_settings
+  label: 'Escape button block settings'  
+  mapping: 
+    history:
+      type: sequence
+      label: 'history'
+      sequence:
+        type: string
+        label: 'history'           
+    display:
+      type: mapping
+      label: 'display'
+      mapping:
+        paths:
+          type: string
+          label: 'paths'
+    new_tab:
+      type: mapping
+      label: 'new_tabdrush'
+      mapping:
+        url:
+          type: string
+          label: 'url'

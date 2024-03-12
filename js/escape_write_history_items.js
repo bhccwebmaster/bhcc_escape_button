@@ -113,12 +113,10 @@
         // Grab the stored value for the history item key to use.
         let historyItemKey = window.sessionStorage.getItem('historyItemKey');
 
-        // If there's no value currently stored, initialise at 1.
-        // @todo when separating the config for the escape and history,
-        //       then set this back to 0.
+        // If there's no value currently stored, initialise at 0.
         if (historyItemKey == null) {
-          window.sessionStorage.setItem('historyItemKey', '1');
-          historyItemKey = 1;
+          window.sessionStorage.setItem('historyItemKey', '0');
+          historyItemKey = 0;
         }
 
         // Check for whether:
@@ -181,6 +179,7 @@
 
       // Run the history re-write if the button is clicked.
       $('#escape-button', context).on('click', {openNewTab: true}, function(e) {
+        e.preventDefault();
         displayBlankOverlay(e);
         doRedirect(e);
       });
