@@ -183,4 +183,137 @@ class EscapeButtonTest extends WebDriverTestBase {
 
   }
 
+  /**
+   * Tests absence of paths configuration.
+   *
+   * If this happens the escape button should
+   * not display.
+   */
+  public function testNoPaths() {
+
+    // Remove the paths setting.
+    $this->escapeButtonSettings['display']['paths'] = '';
+
+    // Create the escape test node.
+    $this->createEscapePage(TRUE);
+
+    // Check the exit button is not visible.
+    $this->assertSession()->pageTextNotContains('Exit this page');
+
+  }
+
+  /**
+   * Tests absence of display configuration.
+   *
+   * If this happens the escape button should
+   * not display.
+   */
+  public function testNoDisplay() {
+
+    // Remove the display setting.
+    $this->escapeButtonSettings['display'] = [];
+
+    // Create the escape test node.
+    $this->createEscapePage(TRUE);
+
+    // Check the exit button is not visible.
+    $this->assertSession()->pageTextNotContains('Exit this page');
+
+  }
+
+  /**
+   * Tests absence of url configuration.
+   *
+   * If this happens the escape button should
+   * not display.
+   */
+  public function testNoUrl() {
+
+    // Remove the url setting.
+    $this->escapeButtonSettings['new_tab']['url'] = '';
+
+    // Create the escape test node.
+    $this->createEscapePage(TRUE);
+
+    // Check the exit button is not visible.
+    $this->assertSession()->pageTextNotContains('Exit this page');
+
+  }
+
+  /**
+   * Tests absence of new_tab configuration.
+   *
+   * If this happens the escape button should
+   * not display.
+   */
+  public function testNoNewTab() {
+
+    // Remove the new_tab setting.
+    $this->escapeButtonSettings['new_tab'] = [];
+
+    // Create the escape test node.
+    $this->createEscapePage(TRUE);
+
+    // Check the exit button is not visible.
+    $this->assertSession()->pageTextNotContains('Exit this page');
+
+  }
+
+  /**
+   * Tests absence of region configuration.
+   *
+   * If this happens the escape button should
+   * not display.
+   */
+  public function testNoRegion() {
+
+    // Remove the region setting.
+    $this->escapeButtonSettings['region'] = '';
+
+    // Create the escape test node.
+    $this->createEscapePage(TRUE);
+
+    // Check the exit button is not visible.
+    $this->assertSession()->pageTextNotContains('Exit this page');
+
+  }
+
+  /**
+   * Tests absence of history configuration.
+   *
+   * If this happens the escape button should
+   * not display.
+   */
+  public function testNoHistory() {
+
+    // Empty the history.
+    $this->escapeButtonSettings['history'] = [];
+
+    // Create the escape test node.
+    $this->createEscapePage(TRUE);
+
+    // Check the exit button is not visible.
+    $this->assertSession()->pageTextNotContains('Exit this page');
+
+  }
+
+  /**
+   * Tests absence of configuration.
+   *
+   * If this happens the escape button should
+   * not display.
+   */
+  public function testNoconfiguration() {
+
+    // Empty the history.
+    $this->escapeButtonSettings = [];
+
+    // Create the escape test node.
+    $this->createEscapePage(TRUE);
+
+    // Check the exit button is not visible.
+    $this->assertSession()->pageTextNotContains('Exit this page');
+
+  }
+
 }
