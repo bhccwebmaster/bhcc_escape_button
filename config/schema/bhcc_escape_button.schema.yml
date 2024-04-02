@@ -17,7 +17,7 @@ block.settings.escape_button_block:
           label: 'paths'
     new_tab:
       type: mapping
-      label: 'new_tabdrush'
+      label: 'new_tab'
       mapping:
         url:
           type: string

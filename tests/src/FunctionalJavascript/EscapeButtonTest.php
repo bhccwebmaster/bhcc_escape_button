@@ -14,7 +14,8 @@ use function PHPUnit\Framework\assertCount;
  */
 class EscapeButtonTest extends WebDriverTestBase {
 
-  private const VISIBLE_PATH = '/visible-escape-button-path/';
+  // private const VISIBLE_PATH = ['/visible-escape-button-path'];
+  private const VISIBLE_PATH = '/visible-escape-button-path';
   private const NOT_VISIBLE_PATH = '/not-visible-escape-button-path/';
   private const NEW_TAB_URL = 'https://www.google.co.uk/';
 
@@ -43,6 +44,7 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     $this->drupalCreateContentType(['type' => 'page']);
 
+    // Sets up a basic configuration.
     $this->escapeButtonSettings = [
       'display' => [
         'paths' => self::VISIBLE_PATH . '*',
@@ -63,12 +65,18 @@ class EscapeButtonTest extends WebDriverTestBase {
    */
   public function testEscapeButtonVisible() {
 
-    // Create the escape test node and display button.
-    $this->createEscapePage(TRUE);
+    $paths = ['path1', 'path/leading-to-wildcard/*', 'path/including-wildcard-*'];
 
-    // Check the exit button is visible.
-    $this->assertSession()->pageTextContains('Exit this page');
+    // Loop through the values.
+    foreach ($paths as $path) {
 
+      // Create the escape test node and display button.
+      $this->createEscapePage(TRUE, $path);
+      //$this->createEscapePage(TRUE);
+
+      // Check the exit button is visible.
+      $this->assertSession()->pageTextContains('Exit this page');
+    }
   }
 
   /**
@@ -83,6 +91,8 @@ class EscapeButtonTest extends WebDriverTestBase {
     $this->assertSession()->pageTextNotContains('Exit this page');
 
   }
+
+
 
   /**
    * Tests exit button click.
@@ -151,14 +161,15 @@ class EscapeButtonTest extends WebDriverTestBase {
    *
    * @var boolean display_escape_button
    */
-  private function createEscapePage(bool $display_escape_button): void {
+  private function createEscapePage(bool $display_escape_button, $alias_path = ""): void {
 
-    $alias_path = '';
-    if ($display_escape_button) {
-      $alias_path = self::VISIBLE_PATH;
-    }
-    else {
+    if (!$display_escape_button) {
+      // Use a path where the button should not be visible
       $alias_path = self::NOT_VISIBLE_PATH;
+    }
+    elseif (empty($alias_path)) {
+      // Use the default path unless one is provided
+      $alias_path = self::VISIBLE_PATH;
     }
 
     $title = $this->randomMachineName(8);
@@ -174,7 +185,7 @@ class EscapeButtonTest extends WebDriverTestBase {
       'path' => '/node/' . $node->id(),
       'alias' => $alias_path . $node->id(),
     ])->save();
-
+    $this->getSession()->wait(3000);
     // Place a block.
     $this->drupalPlaceBlock('escape_button_block', $this->escapeButtonSettings);
 
@@ -267,7 +278,7 @@ class EscapeButtonTest extends WebDriverTestBase {
    */
   public function testNoRegion() {
 
-    // Remove the region setting.
+    // Remove the region setting. 
     $this->escapeButtonSettings['region'] = '';
 
     // Create the escape test node.
@@ -286,7 +297,7 @@ class EscapeButtonTest extends WebDriverTestBase {
    */
   public function testNoHistory() {
 
-    // Empty the history.
+    // empty the history 
     $this->escapeButtonSettings['history'] = [];
 
     // Create the escape test node.
@@ -305,7 +316,7 @@ class EscapeButtonTest extends WebDriverTestBase {
    */
   public function testNoconfiguration() {
 
-    // Empty the history.
+    // empty the history 
     $this->escapeButtonSettings = [];
 
     // Create the escape test node.
@@ -314,6 +325,5 @@ class EscapeButtonTest extends WebDriverTestBase {
     // Check the exit button is not visible.
     $this->assertSession()->pageTextNotContains('Exit this page');
 
-  }
-
+  }  
 }
