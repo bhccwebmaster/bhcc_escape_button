@@ -244,6 +244,7 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
     $link['#attributes'] = [
       'target' => '_blank',
       'id' => 'escape-button',
+      'aria-label' => 'Emergency exit this page',
       'class' => [
         'button',
         'color:white',
