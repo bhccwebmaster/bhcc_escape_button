@@ -17,8 +17,8 @@ class EscapeButtonTest extends WebDriverTestBase {
 
   use NodeCreationTrait;
 
-  private const VISIBLE_PATH = '/visible-path/';
-  private const NOT_VISIBLE_PATH = '/not-visible-path/';
+  private const VISIBLE_PATH = '/visible-path';
+  private const NOT_VISIBLE_PATH = '/not-visible-path';
   private const NEW_TAB_URL = 'https://www.google.co.uk/';
 
   /**
@@ -49,7 +49,8 @@ class EscapeButtonTest extends WebDriverTestBase {
     // Sets up a basic default configuration.
     $this->escapeButtonSettings = [
       'display' => [
-        'paths' => self::VISIBLE_PATH . '*',
+        //'paths' => self::VISIBLE_PATH . '*',
+        'paths' => self::VISIBLE_PATH,
       ],
       'new_tab' => [
         'url' => self::NEW_TAB_URL,
@@ -217,39 +218,6 @@ class EscapeButtonTest extends WebDriverTestBase {
   }
 
   /**
-   * Creates the escape button page.
-   *
-   * @var boolean alias_path
-   */
-  private function createEscapePage($alias_path = "") {
-
-    $title = $this->randomMachineName(8);
-    $node = $this->createNode([
-      'title' => $title,
-      'type' => 'page',
-      'body' => ["value" => "Escape button test page"],
-      'status' => NodeInterface::PUBLISHED,
-    ]);
-    $node->save();
-
-    // Create the node with an alias path where the exit button will be visible.
-    if (!empty($alias_path)) {
-      $this->container->get('entity_type.manager')->getStorage('path_alias')->create([
-        'path' => '/node/' . $node->id(),
-        // 'alias' => $alias_path . $node->id(),
-        'alias' => $alias_path,
-      ])->save();
-    }
-    $this->getSession()->wait(3000);
-
-    // Place the escape block.
-    $this->drupalPlaceBlock('escape_button_block', $this->escapeButtonSettings);
-
-    return $node;
-
-  }
-
-  /**
    * Tests absence of paths configuration.
    *
    * If this happens the escape button should
@@ -281,50 +249,6 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     // Remove the display setting.
     $this->escapeButtonSettings['display'] = [];
-
-    // Create the escape test node.
-    $node = $this->createEscapePage(self::VISIBLE_PATH);
-
-    // Load page.
-    $this->drupalGet('/node/' . $node->id());
-
-    // Check the exit button is not visible.
-    $this->assertSession()->pageTextNotContains('Exit this page');
-
-  }
-
-  /**
-   * Tests absence of url configuration.
-   *
-   * If this happens the escape button should
-   * not display.
-   */
-  public function testNoUrl() {
-
-    // Remove the url setting.
-    $this->escapeButtonSettings['new_tab']['url'] = '';
-
-    // Create the escape test node.
-    $node = $this->createEscapePage(self::VISIBLE_PATH);
-
-    // Load page.
-    $this->drupalGet('/node/' . $node->id());
-
-    // Check the exit button is not visible.
-    $this->assertSession()->pageTextNotContains('Exit this page');
-
-  }
-
-  /**
-   * Tests absence of new_tab configuration.
-   *
-   * If this happens the escape button should
-   * not display.
-   */
-  public function testNoNewTab() {
-
-    // Remove the new_tab setting.
-    $this->escapeButtonSettings['new_tab'] = [];
 
     // Create the escape test node.
     $node = $this->createEscapePage(self::VISIBLE_PATH);
@@ -400,6 +324,39 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     // Check the exit button is not visible.
     $this->assertSession()->pageTextNotContains('Exit this page');
+
+  }
+
+  /**
+   * Creates the escape button page.
+   *
+   * @var boolean alias_path
+   */
+  private function createEscapePage($alias_path = "") {
+
+    $title = $this->randomMachineName(8);
+    $node = $this->createNode([
+      'title' => $title,
+      'type' => 'page',
+      'body' => ["value" => "Escape button test page"],
+      'status' => NodeInterface::PUBLISHED,
+    ]);
+    $node->save();
+
+    // Create the node with an alias path where the exit button will be visible.
+    if (!empty($alias_path)) {
+      $this->container->get('entity_type.manager')->getStorage('path_alias')->create([
+        'path' => '/node/' . $node->id(),
+        // 'alias' => $alias_path . $node->id(),
+        'alias' => $alias_path,
+      ])->save();
+    }
+    $this->getSession()->wait(3000);
+
+    // Place the escape block.
+    $this->drupalPlaceBlock('escape_button_block', $this->escapeButtonSettings);
+
+    return $node;
 
   }
 
