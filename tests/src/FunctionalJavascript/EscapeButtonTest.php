@@ -46,7 +46,7 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     $this->drupalCreateContentType(['type' => 'page']);
 
-    // Sets up a basic configuration.
+    // Sets up a basic default configuration.
     $this->escapeButtonSettings = [
       'display' => [
         'paths' => self::VISIBLE_PATH . '*',
@@ -96,8 +96,10 @@ class EscapeButtonTest extends WebDriverTestBase {
       // Load page.
       $this->drupalGet('/node/' . $node->id());
 
+      $this->getSession()->wait(3000);
+
       // Check the exit button is visible.
-      $this->assertSession()->pageTextContainsOnceOnce('Exit this page');
+      $this->assertSession()->pageTextContainsOnce('Exit this page');
     }
 
     // Set up the test case path.
