@@ -144,7 +144,7 @@ class EscapeButtonTest extends WebDriverTestBase {
   }
 
   /**
-   * Tests absence of exit button.
+   * A negative test of preconfigured path.
    */
   public function testNotVisible() {
 
