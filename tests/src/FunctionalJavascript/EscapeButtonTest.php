@@ -49,8 +49,7 @@ class EscapeButtonTest extends WebDriverTestBase {
     // Sets up a basic default configuration.
     $this->escapeButtonSettings = [
       'display' => [
-        //'paths' => self::VISIBLE_PATH . '*',
-        'paths' => self::VISIBLE_PATH,
+        'paths' => "/path1*\r\n/path2/sub-path/*\r\n/visible-path\r\n\r\n",
       ],
       'new_tab' => [
         'url' => self::NEW_TAB_URL,
@@ -70,69 +69,78 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     // Create the escape test node and display button.
     $node = $this->createEscapePage(self::VISIBLE_PATH);
-
-    // Load page.
     $this->drupalGet('/node/' . $node->id());
-
-    // Check the exit button is visible.
     $this->assertSession()->pageTextContainsOnce('Exit this page');
   }
 
   /**
-   * Tests presence of exit button.
+   * A positive test of /path*.
+   *
+   * This should show using the alias
+   * /path1-node-name.
    */
-  public function testWildcardsInPath() {
+  public function testWildcardInPath() {
 
-    // Set up the test case path.
-    $this->escapeButtonSettings['display']['paths'] = '/path*';
-
-    $alias_paths = ['/path', '/path-with-page-1', '/path-with-page-2', '/path/child-page-1', '/path/child-page-2'];
-
-    // Loop through the values.
-    foreach ($alias_paths as $alias_path) {
-
-      // Create the escape test node and display button.
-      $node = $this->createEscapePage($alias_path);
-
-      // Load page.
-      $this->drupalGet('/node/' . $node->id());
-
-      $this->getSession()->wait(3000);
-
-      // Check the exit button is visible.
-      $this->assertSession()->pageTextContainsOnce('Exit this page');
-    }
-
-    // Set up the test case path.
-    $this->escapeButtonSettings['display']['paths'] = '/path/sub-path/*';
-
-    // This should NOT show the exit button.
-    $alias_paths = '/path/sub-path';
+    $alias = '/path1-node-name';
 
     // Create the escape test node and display button.
-    $node = $this->createEscapePage($alias_paths);
-
-    // Load page.
+    $node = $this->createEscapePage($alias);
     $this->drupalGet('/node/' . $node->id());
+    $this->assertSession()->pageTextContainsOnce('Exit this page');
 
-    // Check the exit button is visible.
-    $this->assertSession()->pageTextNotContains('Exit this page');
+  }
+
+  /**
+   * A positive test of /path*.
+   *
+   * This should show using the alias
+   * /path1/child-page'.
+   */
+  public function testWildcardInPathWithChildPage() {
+
+    $alias = '/path1/child-page';
+
+    // Create the escape test node and display button.
+    $node = $this->createEscapePage($alias);
+    $this->drupalGet('/node/' . $node->id());
+    $this->assertSession()->pageTextContainsOnce('Exit this page');
+
+  }
+
+  /**
+   * A positive test of /path2/sub-path/*.
+   *
+   * This should show using the alias
+   * /path2/sub-path/child-page.
+   */
+  public function testWildcardSubPath() {
 
     // These should show the exit button.
-    $alias_paths = ['/path/sub-path/child-page-1', '/path/sub-path/sub-path/child-page-1'];
+    $alias = '/path2/sub-path/child-page';
 
-    // Loop through the values.
-    foreach ($alias_paths as $alias_path) {
+    // Create the escape test node and display button.
+    $node = $this->createEscapePage($alias);
+    $this->drupalGet('/node/' . $node->id());
+    $this->assertSession()->pageTextContainsOnce('Exit this page');
 
-      // Create the escape test node and display button.
-      $node = $this->createEscapePage($alias_path);
+  }
 
-      // Load page.
-      $this->drupalGet('/node/' . $node->id());
+  /**
+   * A negative test of /path2/sub-path/*.
+   *
+   * This should NOT show using the alias
+   * /path2/sub-path.
+   */
+  public function testNegativeWildcardSubPath() {
 
-      // Check the exit button is visible.
-      $this->assertSession()->pageTextContainsOnce('Exit this page');
-    }
+    // This should NOT show the exit button.
+    $alias = '/path2/sub-path';
+
+    // Create the escape test node and display button.
+    $node = $this->createEscapePage($alias);
+    $this->drupalGet('/node/' . $node->id());
+    $this->assertSession()->pageTextNotContains('Exit this page');
+
   }
 
   /**
@@ -142,11 +150,7 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     // Create the escape test node and do not display button.
     $node = $this->createEscapePage(self::NOT_VISIBLE_PATH);
-
-    // Load page.
     $this->drupalGet('/node/' . $node->id());
-
-    // Check the exit button is not visible.
     $this->assertSession()->pageTextNotContains('Exit this page');
 
   }
@@ -166,9 +170,9 @@ class EscapeButtonTest extends WebDriverTestBase {
     for ($i = 1; $i <= $count; $i++) {
 
       $node = $this->createNode([
-        'title' => "History page " . $historyTitle,
+        'title' => "History page " . $this->randomMachineName(8),
         'type' => 'page',
-        'body' => ["value" => "History page node id = " . $historyTitle],
+        'body' => ["value" => "History page " . $historyTitle],
         'status' => NodeInterface::PUBLISHED,
       ]);
       $this->escapeButtonSettings['history'][] = $node->id();
@@ -176,10 +180,7 @@ class EscapeButtonTest extends WebDriverTestBase {
     }
 
     // Create the escape test node and display button.
-    // @todo remove '/' below and anywhere else
-    $node = $this->createEscapePage(self::VISIBLE_PATH . '/');
-
-    // Load page.
+    $node = $this->createEscapePage(self::VISIBLE_PATH);
     $this->drupalGet('/node/' . $node->id());
 
     $page = $session->getPage();
@@ -189,7 +190,6 @@ class EscapeButtonTest extends WebDriverTestBase {
     $link->click();
 
     // Navigate to previous tab and use history.
-    $index = $count - 1;
     $current_node = $session->getCurrentUrl();
     $history_url = '';
 
@@ -199,10 +199,9 @@ class EscapeButtonTest extends WebDriverTestBase {
       // Put in a wait here to prevent occasional 'page not found' errors.
       $session->wait(3000);
       $current_node = $session->getCurrentUrl();
-      $history_url = $this->baseUrl . "/node/" . $this->escapeButtonSettings['history'][$index];
+      $history_url = $this->baseUrl . "/node/" . $this->escapeButtonSettings['history'][$i];
       $this->assertEquals($history_url, $current_node, "History tab of " . $history_url . " does not match current tab of " . $current_node);
       $session->executeScript("history.back();");
-      $index--;
     }
 
     // Switch to the new_tab and verify the we're on the right url.
@@ -230,11 +229,7 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     // Create the escape test node.
     $node = $this->createEscapePage(self::VISIBLE_PATH);
-
-    // Load page.
     $this->drupalGet('/node/' . $node->id());
-
-    // Check the exit button is not visible.
     $this->assertSession()->pageTextNotContains('Exit this page');
 
   }
@@ -252,11 +247,7 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     // Create the escape test node.
     $node = $this->createEscapePage(self::VISIBLE_PATH);
-
-    // Load page.
     $this->drupalGet('/node/' . $node->id());
-
-    // Check the exit button is not visible.
     $this->assertSession()->pageTextNotContains('Exit this page');
 
   }
@@ -274,11 +265,7 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     // Create the escape test node.
     $node = $this->createEscapePage(self::VISIBLE_PATH);
-
-    // Load page.
     $this->drupalGet('/node/' . $node->id());
-
-    // Check the exit button is not visible.
     $this->assertSession()->pageTextNotContains('Exit this page');
 
   }
@@ -296,11 +283,7 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     // Create the escape test node.
     $node = $this->createEscapePage(self::VISIBLE_PATH);
-
-    // Load page.
     $this->drupalGet('/node/' . $node->id());
-
-    // Check the exit button is not visible.
     $this->assertSession()->pageTextNotContains('Exit this page');
 
   }
@@ -318,11 +301,7 @@ class EscapeButtonTest extends WebDriverTestBase {
 
     // Create the escape test node.
     $node = $this->createEscapePage(self::VISIBLE_PATH);
-
-    // Load page.
     $this->drupalGet('/node/' . $node->id());
-
-    // Check the exit button is not visible.
     $this->assertSession()->pageTextNotContains('Exit this page');
 
   }
@@ -347,7 +326,6 @@ class EscapeButtonTest extends WebDriverTestBase {
     if (!empty($alias_path)) {
       $this->container->get('entity_type.manager')->getStorage('path_alias')->create([
         'path' => '/node/' . $node->id(),
-        // 'alias' => $alias_path . $node->id(),
         'alias' => $alias_path,
       ])->save();
     }
