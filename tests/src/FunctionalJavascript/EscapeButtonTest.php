@@ -63,24 +63,22 @@ class EscapeButtonTest extends WebDriverTestBase {
   }
 
   /**
-   * Tests presence of exit button.
+   * Consolidated tests for escape button visibility conditions.
    */
-  public function testVisible() {
+  public function testVisibilityConditions(): void {
 
-    // Create the escape test node and display button.
+    // Tests presence of exit button on visible path.
     $node = $this->createEscapePage(self::VISIBLE_PATH);
     $this->drupalGet('/node/' . $node->id());
     $this->assertSession()->pageTextContainsOnce('Exit this page');
-  }
 
-  /**
-   * A positive test of /path*.
-   *
-   * This should show using the alias
-   * /path1-node-name.
-   */
-  public function testWildcardInPath() {
+    // A negative test of preconfigured path.
+    $node = $this->createEscapePage(self::NOT_VISIBLE_PATH);
+    $this->drupalGet('/node/' . $node->id());
+    $this->assertSession()->pageTextNotContains('Exit this page');
 
+    // A positive test of /path*.
+    // This should show using the alias /path1-node-name.
     $alias = '/path1-node-name';
 
     // Create the escape test node and display button.
@@ -88,16 +86,8 @@ class EscapeButtonTest extends WebDriverTestBase {
     $this->drupalGet('/node/' . $node->id());
     $this->assertSession()->pageTextContainsOnce('Exit this page');
 
-  }
-
-  /**
-   * A positive test of /path*.
-   *
-   * This should show using the alias
-   * /path1/child-page'.
-   */
-  public function testWildcardInPathWithChildPage() {
-
+    // A positive test of /path*.
+    // This should show using the alias /path1/child-page'.
     $alias = '/path1/child-page';
 
     // Create the escape test node and display button.
@@ -105,16 +95,8 @@ class EscapeButtonTest extends WebDriverTestBase {
     $this->drupalGet('/node/' . $node->id());
     $this->assertSession()->pageTextContainsOnce('Exit this page');
 
-  }
-
-  /**
-   * A positive test of /path2/sub-path/*.
-   *
-   * This should show using the alias
-   * /path2/sub-path/child-page.
-   */
-  public function testWildcardSubPath() {
-
+    // A positive test of /path2/sub-path/*.
+    // This should show using the alias /path2/sub-path/child-page.
     // These should show the exit button.
     $alias = '/path2/sub-path/child-page';
 
@@ -123,16 +105,8 @@ class EscapeButtonTest extends WebDriverTestBase {
     $this->drupalGet('/node/' . $node->id());
     $this->assertSession()->pageTextContainsOnce('Exit this page');
 
-  }
-
-  /**
-   * A negative test of /path2/sub-path/*.
-   *
-   * This should NOT show using the alias
-   * /path2/sub-path.
-   */
-  public function testNegativeWildcardSubPath() {
-
+    // A negative test of /path2/sub-path/*.
+    // This should NOT show using the alias /path2/sub-path.
     // This should NOT show the exit button.
     $alias = '/path2/sub-path';
 
@@ -140,25 +114,12 @@ class EscapeButtonTest extends WebDriverTestBase {
     $node = $this->createEscapePage($alias);
     $this->drupalGet('/node/' . $node->id());
     $this->assertSession()->pageTextNotContains('Exit this page');
-
-  }
-
-  /**
-   * A negative test of preconfigured path.
-   */
-  public function testNotVisible() {
-
-    // Create the escape test node and do not display button.
-    $node = $this->createEscapePage(self::NOT_VISIBLE_PATH);
-    $this->drupalGet('/node/' . $node->id());
-    $this->assertSession()->pageTextNotContains('Exit this page');
-
   }
 
   /**
    * Tests exit button click.
    */
-  public function testPressExitButton() {
+  public function testPressExitButton(): void {
 
     $session = $this->getSession();
 
@@ -217,13 +178,12 @@ class EscapeButtonTest extends WebDriverTestBase {
   }
 
   /**
-   * Tests absence of paths configuration.
-   *
-   * If this happens the escape button should
-   * not display.
+   * Consolidated tests for escape button block configuration.
    */
-  public function testNoPaths() {
+  public function testBlockConfiguration(): void {
 
+    // Tests absence of paths configuration.
+    // If this happens the escape button should not display.
     // Remove the paths setting.
     $this->escapeButtonSettings['display']['paths'] = '';
 
@@ -232,16 +192,8 @@ class EscapeButtonTest extends WebDriverTestBase {
     $this->drupalGet('/node/' . $node->id());
     $this->assertSession()->pageTextNotContains('Exit this page');
 
-  }
-
-  /**
-   * Tests absence of display configuration.
-   *
-   * If this happens the escape button should
-   * not display.
-   */
-  public function testNoDisplay() {
-
+    // Tests absence of display configuration.
+    // If this happens the escape button should not display.
     // Remove the display setting.
     $this->escapeButtonSettings['display'] = [];
 
@@ -250,16 +202,8 @@ class EscapeButtonTest extends WebDriverTestBase {
     $this->drupalGet('/node/' . $node->id());
     $this->assertSession()->pageTextNotContains('Exit this page');
 
-  }
-
-  /**
-   * Tests absence of region configuration.
-   *
-   * If this happens the escape button should
-   * not display.
-   */
-  public function testNoRegion() {
-
+    // Tests absence of region configuration.
+    // If this happens the escape button should not display.
     // Remove the region setting.
     $this->escapeButtonSettings['region'] = '';
 
@@ -268,16 +212,8 @@ class EscapeButtonTest extends WebDriverTestBase {
     $this->drupalGet('/node/' . $node->id());
     $this->assertSession()->pageTextNotContains('Exit this page');
 
-  }
-
-  /**
-   * Tests absence of history configuration.
-   *
-   * If this happens the escape button should
-   * not display.
-   */
-  public function testNoHistory() {
-
+    // Tests absence of history configuration.
+    // If this happens the escape button should not display.
     // Empty the history.
     $this->escapeButtonSettings['history'] = [];
 
@@ -286,16 +222,8 @@ class EscapeButtonTest extends WebDriverTestBase {
     $this->drupalGet('/node/' . $node->id());
     $this->assertSession()->pageTextNotContains('Exit this page');
 
-  }
-
-  /**
-   * Tests absence of configuration.
-   *
-   * If this happens the escape button should
-   * not display.
-   */
-  public function testNoconfiguration() {
-
+    // Tests absence of configuration.
+    // If this happens the escape button should not display.
     // Empty the history.
     $this->escapeButtonSettings = [];
 
@@ -303,7 +231,6 @@ class EscapeButtonTest extends WebDriverTestBase {
     $node = $this->createEscapePage(self::VISIBLE_PATH);
     $this->drupalGet('/node/' . $node->id());
     $this->assertSession()->pageTextNotContains('Exit this page');
-
   }
 
   /**
@@ -331,11 +258,31 @@ class EscapeButtonTest extends WebDriverTestBase {
     }
     $this->getSession()->wait(3000);
 
+    // Remove any existing escape button block.
+    $this->removeBlocksByPluginId('escape_button_block');
+
     // Place the escape block.
     $this->drupalPlaceBlock('escape_button_block', $this->escapeButtonSettings);
 
     return $node;
 
+  }
+
+  /**
+   * Remove blocks by plugin id.
+   *
+   * Between test placements we need to remove the block so it can be replaced
+   * with new settings.
+   *
+   * @param string $plugin_id
+   *   The plugin ID of the blocks to remove.
+   */
+  private function removeBlocksByPluginId(string $plugin_id) :void {
+    $block_storage = $this->container->get('entity_type.manager')->getStorage('block');
+    $blocks = $block_storage->loadByProperties(['plugin' => $plugin_id]);
+    foreach ($blocks as $block) {
+      $block->delete();
+    }
   }
 
 }
