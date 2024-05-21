@@ -1,0 +1,44 @@
+<?php
+
+Use Drupal\block\Entity\Block;
+use Drupal\Core\Url;
+use Drupal\node\Entity\Node;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+
+
+
+const LOG_DESCRIPTOR = 'bhcc escape button - cache rebuild';
+/**
+ * Rebuild data based upon refreshed caches.
+ *
+ * This hook retrieved the escape button module history pages
+ * so that they are stored in cache and ready to use immediately
+ * when the exit button is used.
+ */
+function bhcc_escape_button_rebuild() {
+
+  $historyItems = [];
+  // get the list of history items 
+  $block = Block::load('escape_button');
+  if ($block) {
+    $settings = $block->get('settings');
+    $historyItems = $settings['history'];
+  }
+  // @todo test if $historyItems[] is emtpy or null
+  //cycle through and request to get them cached
+  foreach ($historyItems as $historyNodeID) {
+    $node = \Drupal\node\Entity\Node::load($historyNodeID);
+    try {
+      $client = new GuzzleHttp\Client();
+      $current_url = Url::fromRoute('entity.node.canonical', ['node' => $historyNodeID], ['absolute' => TRUE])->toString();
+      $response = $client->get($current_url);
+    }
+    catch (RequestException $e) {
+      \Drupal::logger(LOG_DESCRIPTOR)->error($e->getMessage());
+    }  
+    
+  }
+}
+
+
