@@ -68,7 +68,7 @@ function bhcc_escape_button_rebuild() {
         $response = $client->get($current_url);
       }
       catch (Exception $e) {
-        \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->warning($e->getMessage());
+        \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->error('node:=' . $historyNodeID . ', ' . $e->getMessage());
       }
     }
   }
