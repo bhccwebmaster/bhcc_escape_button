@@ -25,32 +25,33 @@ function bhcc_escape_button_rebuild() {
   $historyItems = [];
   $fallbackHost = '';
 
-/*   // Check if the domain is available - if not exit
+  $isHostDefault = \Drupal::request()->getHost();
+  if ($isHostDefault == 'default' && Settings::get('bhcc_host_uri')) {
+    $fallbackHost = Settings::get('bhcc_host_uri');
+  }
+
+  // Check if the domain is available - if not exit.
   try {
     $client = new Client();
     $homeUrl = '';
     if (empty($fallbackHost)) {
       $homeUrl = Url::fromRoute('<front>', [], ['absolute' => TRUE])->toString();
-    } else {
+    }
+    else {
       $homeUrl = Url::fromRoute($fallbackHost);
     }
-    $response = $client->get($homeUrl);
+    $client->get($homeUrl);
   }
   catch (RequestException $e) {
     \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->warning("The requested domain is not available:- " . $e->getMessage());
     return FALSE;
-  } */
+  }
 
-  // Get the list of history items
+  // Get the list of history items.
   $entity_type_manager = \Drupal::entityTypeManager();
   $escape_buttons = $entity_type_manager->getStorage('block')->loadByProperties([
     'plugin' => 'escape_button_block',
   ]);
-
-  $isHostDefault = \Drupal::request()->getHost();
-  if ($isHostDefault == 'default' && Settings::get('bhcc_host_uri')) {
-    $fallbackHost = Settings::get('bhcc_host_uri');
-  }
 
   foreach ($escape_buttons as $escape_button) {
 
@@ -61,11 +62,12 @@ function bhcc_escape_button_rebuild() {
     // @todo test if $historyItems[] is emtpy or null
     // cycle through and request to get them cached
     foreach ($historyItems as $historyNodeID) {
-      $node = Node::load($historyNodeID);
+      Node::load($historyNodeID);
       try {
         $client = new Client();
         $current_url = Url::fromRoute('entity.node.canonical', ['node' => $historyNodeID], ['absolute' => TRUE])->toString();
-        $response = $client->get($current_url);
+        \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->notice('Cache refreshed for node:=' . $historyNodeID);
+        $client->get($current_url);
       }
       catch (Exception $e) {
         \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->error('node:=' . $historyNodeID . ', ' . $e->getMessage());
