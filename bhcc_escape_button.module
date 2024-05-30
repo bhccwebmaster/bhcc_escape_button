@@ -24,33 +24,33 @@ function bhcc_escape_button_rebuild() {
 
   $historyItems = [];
   $fallbackHost = '';
-  
-  $isHostDefault = \Drupal::request()->getHost();
-  if ($isHostDefault = 'default' && Settings::get('bhcc_host_uri')) {
-    $fallbackHost = Settings::get('bhcc_host_uri');
-  }
 
-  // Check if the domain is available - if not exit
+/*   // Check if the domain is available - if not exit
   try {
     $client = new Client();
     $homeUrl = '';
     if (empty($fallbackHost)) {
       $homeUrl = Url::fromRoute('<front>', [], ['absolute' => TRUE])->toString();
     } else {
-      $homeUrl = $fallbackHost;
+      $homeUrl = Url::fromRoute($fallbackHost);
     }
     $response = $client->get($homeUrl);
   }
   catch (RequestException $e) {
     \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->warning("The requested domain is not available:- " . $e->getMessage());
     return FALSE;
-  }
+  } */
 
   // Get the list of history items
   $entity_type_manager = \Drupal::entityTypeManager();
   $escape_buttons = $entity_type_manager->getStorage('block')->loadByProperties([
     'plugin' => 'escape_button_block',
   ]);
+
+  $isHostDefault = \Drupal::request()->getHost();
+  if ($isHostDefault == 'default' && Settings::get('bhcc_host_uri')) {
+    $fallbackHost = Settings::get('bhcc_host_uri');
+  }
 
   foreach ($escape_buttons as $escape_button) {
 
@@ -67,8 +67,8 @@ function bhcc_escape_button_rebuild() {
         $current_url = Url::fromRoute('entity.node.canonical', ['node' => $historyNodeID], ['absolute' => TRUE])->toString();
         $response = $client->get($current_url);
       }
-      catch (RequestException $e) {
-        \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->error($e->getMessage());
+      catch (Exception $e) {
+        \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->warning($e->getMessage());
       }
     }
   }
