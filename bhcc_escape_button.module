@@ -1,14 +1,18 @@
 <?php
 
-Use Drupal\block\Entity\Block;
+/**
+ * @file
+ * Contains code to refill escape button caches when cache has been cleared.
+ */
+
+use Drupal\Core\Site\Settings;
 use Drupal\Core\Url;
 use Drupal\node\Entity\Node;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
+const BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR = 'bhcc escape button - cache rebuild';
 
-
-const LOG_DESCRIPTOR = 'bhcc escape button - cache rebuild';
 /**
  * Rebuild data based upon refreshed caches.
  *
@@ -19,26 +23,53 @@ const LOG_DESCRIPTOR = 'bhcc escape button - cache rebuild';
 function bhcc_escape_button_rebuild() {
 
   $historyItems = [];
-  // get the list of history items 
-  $block = Block::load('escape_button');
-  if ($block) {
-    $settings = $block->get('settings');
-    $historyItems = $settings['history'];
+  $fallbackHost = '';
+  
+  $isHostDefault = \Drupal::request()->getHost();
+  if ($isHostDefault = 'default' && Settings::get('bhcc_host_uri')) {
+    $fallbackHost = Settings::get('bhcc_host_uri');
   }
-  // @todo test if $historyItems[] is emtpy or null
-  //cycle through and request to get them cached
-  foreach ($historyItems as $historyNodeID) {
-    $node = \Drupal\node\Entity\Node::load($historyNodeID);
-    try {
-      $client = new GuzzleHttp\Client();
-      $current_url = Url::fromRoute('entity.node.canonical', ['node' => $historyNodeID], ['absolute' => TRUE])->toString();
-      $response = $client->get($current_url);
+
+  // Check if the domain is available - if not exit
+  try {
+    $client = new Client();
+    $homeUrl = '';
+    if (empty($fallbackHost)) {
+      $homeUrl = Url::fromRoute('<front>', [], ['absolute' => TRUE])->toString();
+    } else {
+      $homeUrl = $fallbackHost;
     }
-    catch (RequestException $e) {
-      \Drupal::logger(LOG_DESCRIPTOR)->error($e->getMessage());
-    }  
-    
+    $response = $client->get($homeUrl);
+  }
+  catch (RequestException $e) {
+    \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->warning("The requested domain is not available:- " . $e->getMessage());
+    return FALSE;
+  }
+
+  // Get the list of history items
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $escape_buttons = $entity_type_manager->getStorage('block')->loadByProperties([
+    'plugin' => 'escape_button_block',
+  ]);
+
+  foreach ($escape_buttons as $escape_button) {
+
+    if ($escape_button) {
+      $settings = $escape_button->get('settings');
+      $historyItems = $settings['history'];
+    }
+    // @todo test if $historyItems[] is emtpy or null
+    // cycle through and request to get them cached
+    foreach ($historyItems as $historyNodeID) {
+      $node = Node::load($historyNodeID);
+      try {
+        $client = new Client();
+        $current_url = Url::fromRoute('entity.node.canonical', ['node' => $historyNodeID], ['absolute' => TRUE])->toString();
+        $response = $client->get($current_url);
+      }
+      catch (RequestException $e) {
+        \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->error($e->getMessage());
+      }
+    }
   }
 }
-
-
