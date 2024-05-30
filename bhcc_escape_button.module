@@ -11,8 +11,6 @@ use Drupal\node\Entity\Node;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
-const BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR = 'bhcc escape button - cache rebuild';
-
 /**
  * Rebuild data based upon refreshed caches.
  *
@@ -43,7 +41,7 @@ function bhcc_escape_button_rebuild() {
     $client->get($homeUrl);
   }
   catch (RequestException $e) {
-    \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->warning("The requested domain is not available:- " . $e->getMessage());
+    \Drupal::logger('bhcc escape button - cache rebuild')->warning("The requested domain is not available:- " . $e->getMessage());
     return FALSE;
   }
 
@@ -66,11 +64,11 @@ function bhcc_escape_button_rebuild() {
       try {
         $client = new Client();
         $current_url = Url::fromRoute('entity.node.canonical', ['node' => $historyNodeID], ['absolute' => TRUE])->toString();
-        \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->notice('Cache refreshed for node:=' . $historyNodeID);
+        \Drupal::logger('bhcc escape button - cache rebuild')->notice('Cache refreshed for node:=' . $historyNodeID);
         $client->get($current_url);
       }
       catch (Exception $e) {
-        \Drupal::logger(BHCC_ESCAPE_BUTTON_LOG_DESCRIPTOR)->error('node:=' . $historyNodeID . ', ' . $e->getMessage());
+        \Drupal::logger('bhcc escape button - cache rebuild')->error('node:=' . $historyNodeID . ', ' . $e->getMessage());
       }
     }
   }
