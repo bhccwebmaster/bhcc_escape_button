@@ -21,7 +21,7 @@ use GuzzleHttp\Exception\RequestException;
 function bhcc_escape_button_rebuild() {
 
   $historyItems = [];
-  // $fallbackHost = '';
+  $host = '';
 
   $host = Settings::get('bhcc_host_uri') ?? \Drupal::request()->getSchemeAndHttpHost();
 
@@ -33,7 +33,7 @@ function bhcc_escape_button_rebuild() {
   // Check the home page is available - if not exit.
   try {
     $client = new Client();
-    $client->get(Url::fromRoute($host));
+    $client->get($host);
   }
   catch (Exception $e) {
     \Drupal::logger('bhcc escape button - cache rebuild')->warning("The requested domain (' . $host .  ') is not available:- " . $e->getMessage());
@@ -58,9 +58,9 @@ function bhcc_escape_button_rebuild() {
       Node::load($historyNodeID);
       try {
         $client = new Client();
-        $current_url = Url::fromRoute('entity.node.canonical', ['node' => $historyNodeID], ['absolute' => TRUE])->toString();
-        \Drupal::logger('bhcc escape button - cache rebuild')->notice('Cache refreshed for node:=' . $historyNodeID);
-        $client->get($current_url);
+        $current_url = Url::fromRoute('entity.node.canonical', ['node' => $historyNodeID], ['absolute' => FALSE])->toString();
+        $client->get($host . $current_url);
+        \Drupal::logger('bhcc escape button - cache rebuild')->notice('Cache refreshed for node:=' . $historyNodeID);      
       }
       catch (Exception $e) {
         \Drupal::logger('bhcc escape button - cache rebuild')->error('node:=' . $historyNodeID . ', ' . $e->getMessage());
