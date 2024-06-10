@@ -21,27 +21,22 @@ use GuzzleHttp\Exception\RequestException;
 function bhcc_escape_button_rebuild() {
 
   $historyItems = [];
-  $fallbackHost = '';
+  // $fallbackHost = '';
 
-  $isHostDefault = \Drupal::request()->getHost();
-  if ($isHostDefault == 'default' && Settings::get('bhcc_host_uri')) {
-    $fallbackHost = Settings::get('bhcc_host_uri');
+  $host = Settings::get('bhcc_host_uri') ?? \Drupal::request()->getSchemeAndHttpHost();
+
+  // If not uri is provided, exit.
+  if ($host == 'http://default') {
+    return FALSE;
   }
 
-  // Check if the domain is available - if not exit.
+  // Check the home page is available - if not exit.
   try {
     $client = new Client();
-    $homeUrl = '';
-    if (empty($fallbackHost)) {
-      $homeUrl = Url::fromRoute('<front>', [], ['absolute' => TRUE])->toString();
-    }
-    else {
-      $homeUrl = Url::fromRoute($fallbackHost);
-    }
-    $client->get($homeUrl);
+    $client->get(Url::fromRoute($host));
   }
-  catch (RequestException $e) {
-    \Drupal::logger('bhcc escape button - cache rebuild')->warning("The requested domain is not available:- " . $e->getMessage());
+  catch (Exception $e) {
+    \Drupal::logger('bhcc escape button - cache rebuild')->warning("The requested domain (' . $host .  ') is not available:- " . $e->getMessage());
     return FALSE;
   }
 
