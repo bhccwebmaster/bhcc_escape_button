@@ -17,7 +17,7 @@ use GuzzleHttp\Client;
  * so that they are stored in cache and ready to use immediately
  * when the exit button is used.
  */
-function bhcc_escape_button_rebuild() {
+/* function bhcc_escape_button_rebuild() {
 
   $historyItems = [];
   $host = '';
@@ -74,3 +74,4 @@ function bhcc_escape_button_rebuild() {
     }
   }
 }
+ */
