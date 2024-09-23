@@ -3,9 +3,8 @@
 namespace Drupal\Tests\bhcc_escape_button\FunctionalJavascript;
 
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
-use Drupal\node\NodeInterface;
 use Drupal\Tests\node\Traits\NodeCreationTrait;
-
+use Drupal\node\NodeInterface;
 use function PHPUnit\Framework\assertCount;
 
 /**
