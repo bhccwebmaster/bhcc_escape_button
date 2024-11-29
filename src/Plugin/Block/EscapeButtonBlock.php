@@ -225,19 +225,9 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
       ],
     ];
 
-    // Create 3 inner indicator containers.
-    for ($i = 0; $i < 3; $i++) {
-      $indicator[] = [
-        '#type' => 'container',
-        '#attributes' => [
-          'class' => [
-            'exit-keypress-indicator__light',
-          ],
-        ],
-      ];
-    }
+    $indicator[] = $this->generateShiftIndicatorDots();
 
-    $link_title = Markup::create('Exit this page' . $this->renderer->renderPlain($indicator),);
+    $link_title = Markup::create('Exit this page' . $this->renderer->renderInIsolation($indicator));
     $link = Link::fromTextAndUrl($link_title, $link_url)->toRenderable();
 
     // Add attributes to the link.
@@ -372,6 +362,103 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
     }
 
     return parent::getCacheTags();
+  }
+
+  /**
+   * Generates dot icons.
+   *
+   * Delegates to sub-functions.
+   *
+   * @return array
+   *   Array containing render array of two icons.
+   */
+  protected function generateShiftIndicatorDots(): array {
+
+    // Create 3 inner indicator containers.
+    for ($i = 0; $i < 3; $i++) {
+      $indicator[$i] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => [
+            'exit-keypress-indicator__light',
+          ],
+        ],
+      ];
+
+      $indicator[$i]['icon_inactive'] = $this->generateShiftIndicatorInactiveIcon();
+      $indicator[$i]['icon_active'] = $this->generateShiftIndicatorActiveIcon();
+    }
+
+    return $indicator;
+  }
+
+  /**
+   * Generates active dot icon.
+   *
+   * @return array
+   *   Array containing render array of the active icon.
+   */
+  protected function generateShiftIndicatorActiveIcon(): array {
+
+    $classes = [
+      'shift-indicator-icon--active',
+      'pos:abs',
+      'hidden',
+    ];
+
+    $style = 'stroke: rgb(255, 255, 255); stroke-width: 2px; fill: rgb(255 255 255)';
+
+    return $this->generateShiftIndicatorIcon($classes, $style);
+  }
+
+  /**
+   * Generates inactive dot icon.
+   *
+   * @return array
+   *   Array containing render array of the inactive icon.
+   */
+  protected function generateShiftIndicatorInactiveIcon(): array {
+
+    $classes = [
+      'shift-indicator-icon--inactive',
+      'pos:abs',
+    ];
+
+    $style = 'stroke: rgb(255, 255, 255); stroke-width: 2px; fill: none';
+
+    return $this->generateShiftIndicatorIcon($classes, $style);
+  }
+
+  /**
+   * Provides render array of svg tag.
+   *
+   * @return array
+   *   Array containing render array of the svg tag.
+   */
+  protected function generateShiftIndicatorIcon($classes, $style): array {
+
+    return [
+      '#type' => 'html_tag',
+      '#tag' => 'svg',
+      '#attributes' => [
+        'class' => $classes,
+        'xmlns' => 'http://www.w3.org/2000/svg',
+        'viewBox' => '0 0 16 16',
+        'aria-hidden' => 'true',
+        'aria-focusable' => 'false',
+      ],
+      'child' => [
+        '#type' => 'html_tag',
+        '#tag' => 'ellipse',
+        '#attributes' => [
+          'rx' => '7',
+          'ry' => '7',
+          'cx' => '8',
+          'cy' => '8',
+          'style' => $style,
+        ],
+      ],
+    ];
   }
 
 }

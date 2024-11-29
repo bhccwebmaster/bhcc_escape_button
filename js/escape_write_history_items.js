@@ -27,7 +27,12 @@
     // Loop through the 3 lights and update according to keypress index.
     const indicators = $('.exit-keypress-indicator__light', indicatorContainer);
     $.each(indicators, function(index, indicator) {
-      $(indicator).toggleClass('exit-keypress-indicator__light--on', index < keypressCounter);
+
+      // Switch from displaying the inactive to the active icon.
+      if (index < keypressCounter) {
+        $('.shift-indicator-icon--inactive', indicator).addClass('hidden');
+        $('.shift-indicator-icon--active', indicator).removeClass('hidden');
+      }
     })
   }
 
