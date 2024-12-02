@@ -432,10 +432,15 @@ class EscapeButtonBlock extends BlockBase implements ContainerFactoryPluginInter
   /**
    * Provides render array of svg tag.
    *
+   * @param array $classes
+   *   Classes to add to the svg tag.
+   * @param string $style
+   *   Content of the style attribute.
+   *
    * @return array
    *   Array containing render array of the svg tag.
    */
-  protected function generateShiftIndicatorIcon($classes, $style): array {
+  protected function generateShiftIndicatorIcon(array $classes, string $style): array {
 
     return [
       '#type' => 'html_tag',
